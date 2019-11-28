@@ -54,8 +54,7 @@ dqn.compile(Adam(lr=0.002), metrics=['mae'])
 # dqn.load_weights('name_weights.h5')
 # print('loaded')
 
-dqn.fit(env, nb_steps=200000, verbose=2, visualize=False)  # время обучения ~ 10 мин.
-dqn.save_weights('weights.h5', overwrite=True)
+# dqn.fit(env, nb_steps=200000, verbose=2, visualize=False)  # время обучения ~ 10 мин.
 print('save_weights')
 dqn.model.save('dataset/recom_model.h5')
 print('model.save')

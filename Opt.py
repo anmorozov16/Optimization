@@ -38,7 +38,7 @@ class Recommendations:
         target = self.train.target(self.opt_data, self.index)
         return target - self.train.y_data[self.index]
 
-    def observation(self, input_data = None):
+    def observation(self, input_data=None):
         if input_data is None:
             input_data = self.train.input_data[self.index]
         return input_data, (self.parameter_index, self.opt_data[self.parameter_index])
@@ -78,12 +78,11 @@ class Recommendations:
         return self._return(predict_data)
 
     def predict(self, model, input_data):
-        info = np.empty((1, 1, 2))
         obs = self.observation(input_data)
-        info[0, 0] = obs[1]
         result = False
         while not result:
-            action = np.argmax(model.predict([[obs[0]], info]))
+            action = np.argmax(model.predict([np.array([[obs[0]]]),
+                                              np.array([[obs[1]]])]))
             opt_param = self.opt_data.copy()
             obs, result = self.step(action, input_data)
         return opt_param
