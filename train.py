@@ -7,6 +7,9 @@ from rl.agents.dqn import DQNAgent
 from rl.policy import EpsGreedyQPolicy
 from rl.memory import PrioritizedMemory
 from rl.processors import MultiInputProcessor
+from catboost import CatBoostRegressor
+from sklearn.preprocessing import RobustScaler, StandardScaler
+from sklearn.model_selection import train_test_split
 
 import Opt
 import utils
@@ -17,12 +20,21 @@ df = pd.read_excel('dataset/design_recom.xlsx', na_values=[""], decimal=',')
 mean = df.iloc[:, NUM_OF_USER_INPUTS:-1].mean(axis=0)
 std = df.iloc[:, NUM_OF_USER_INPUTS:-1].std(axis=0)
 
+scaler = StandardScaler()
+
+X = df.drop(['oil_production12'], axis=1)
+y = df['oil_production12']
+
+# X_scaled = scaler.fit_transform(df.drop(['oil_production12'], axis=1))
+# X_train_scaled, X_test_scaled, y_train_scaled, y_test_scaled = train_test_split(X_scaled, y, random_state=420)
+
+model_y = CatBoostRegressor(l2_leaf_reg=0.4, silent=True, random_state=420).fit(X, y)
 
 print(df.shape)
 len_steps = df.iloc[:, NUM_OF_USER_INPUTS:-1]
 len_steps = (len_steps.max(axis=0) - len_steps.min(axis=0)) / 10
 
-model_y = utils.ModelSimulationTarget()
+# model_y = utils.ModelSimulationTarget()
 train_obj = Opt.Train(df.iloc[:, :NUM_OF_USER_INPUTS], df.iloc[:, -1], model_y)
 env = Opt.Recommendations([0.] * 8, train=train_obj, len_steps=len_steps, limits=[-10, 10])
 
@@ -54,7 +66,7 @@ dqn.compile(Adam(lr=0.002), metrics=['mae'])
 # dqn.load_weights('name_weights.h5')
 # print('loaded')
 
-# dqn.fit(env, nb_steps=200000, verbose=2, visualize=False)  # время обучения ~ 10 мин.
+dqn.fit(env, nb_steps=200000, verbose=2, visualize=False)  # время обучения ~ 10 мин.
 print('save_weights')
 dqn.model.save('dataset/recom_model.h5')
 print('model.save')
