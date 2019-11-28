@@ -16,16 +16,25 @@ class Train:
 
 
 class Recommendations:
-    def __init__(self, begin_optimization_data, train=None, len_steps=1., limits=[-np.inf, np.inf]):
+    def __init__(self, begin_optimization_data, train=None, len_steps=1., limits={'min': -np.inf, 'max': np.inf}):
         self.begin_optimization_data = begin_optimization_data
         self.opt_data = begin_optimization_data.copy()
         self.train = train
         self.parameter_index, self.index = 0, 0
-        self.limits = limits
         self.nb_actions = 3
         self.last_action = -1
         self.sum_reward = 0.
 
+        if type(limits['min']) in (int, float):
+            self.limits = {
+                'min': [limits['min'] for _ in range(len(self.opt_data))],
+                'max': [limits['max'] for _ in range(len(self.opt_data))],
+            }
+        elif type(limits['min']) in (np.array, list, tuple, pd.Series) and len(limits['min']) != len(self.opt_data):
+            raise BaseException('Expected limits length {}, but was given {}'.format(len(self.opt_data),
+                                                                                     len(limits['min'])))
+        else:
+            self.limits = limits
         if type(len_steps) in (int, float):
             self.len_steps = [len_steps for _ in range(len(self.opt_data))]
         elif type(len_steps) in (np.array, list, tuple, pd.Series) and len(len_steps) != len(self.opt_data):
@@ -61,11 +70,11 @@ class Recommendations:
             action = 2
         self.last_action = action
 
-        if action == 0 and\
-                self.limits[1] > self.opt_data[self.parameter_index] + self.len_steps[self.parameter_index]:
+        if action == 0 and self.limits['max'][self.parameter_index] >\
+                self.opt_data[self.parameter_index] + self.len_steps[self.parameter_index]:
             self.opt_data[self.parameter_index] += self.len_steps[self.parameter_index]
-        elif action == 1 and\
-                self.limits[0] < self.opt_data[self.parameter_index] - self.len_steps[self.parameter_index]:
+        elif action == 1 and self.limits['min'][self.parameter_index] <\
+                self.opt_data[self.parameter_index] - self.len_steps[self.parameter_index]:
             self.opt_data[self.parameter_index] -= self.len_steps[self.parameter_index]
         else:
             self.parameter_index += 1
