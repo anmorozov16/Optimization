@@ -67,7 +67,7 @@ class Recommendations:
         elif action == 1 and\
                 self.limits[0] < self.opt_data[self.parameter_index] - self.len_steps[self.parameter_index]:
             self.opt_data[self.parameter_index] -= self.len_steps[self.parameter_index]
-        elif action == 2:
+        else:
             self.parameter_index += 1
             if self.parameter_index == len(self.opt_data):
                 self.parameter_index = 0
